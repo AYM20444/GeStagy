@@ -1,175 +1,194 @@
 # GeStagy — Plateforme de Gestion de Stages et de Recrutement
 
-**GeStagy** est une application Full-Stack dédiée à la gestion complète du cycle de vie des stages en entreprise : de la publication des offres et du suivi des candidatures (pipeline Kanban) jusqu'à l'encadrement quotidien des stagiaires, la gestion des tâches et l'évaluation des performances.
+**GeStagy** (InternHub) est une application Full-Stack d'entreprise dédiée à la gestion complète du cycle de vie des stages : de la publication des offres et du suivi des candidatures (pipeline Kanban drag & drop) jusqu'à l'encadrement quotidien des stagiaires, la gestion interactive des tâches, les conventions et l'évaluation des performances.
 
 ---
 
-## Fonctionnalités Principales
+## Fonctionnalités Principales & Espaces Utilisateurs
 
-- **Portail Public Candidats** : Consultation des offres de stage ouvertes et dépôt de candidature (avec CV et lettre de motivation) sans nécessiter de compte préalable.
-- **Authentification & Sécurité** : Authentification stateless par **JWT (JSON Web Token)** et contrôle d'accès basé sur les rôles (**RBAC**).
-- **Gestion du Recrutement (RH & Recruteurs)** :
-  - Création, modification, publication et archivage des offres de stage (`OPEN`, `DRAFT`, `CLOSED`).
-  - Tableau **Kanban de recrutement** pour suivre l'avancement des candidats (`NEW`, `SCREENING`, `INTERVIEW`, `ACCEPTED`, `REJECTED`).
-  - Attribution de scores, notes d'évaluation et planification d'entretiens.
-  - Tableau de bord analytique et métriques RH.
-- **Suivi de Stage & Encadrement (Tuteurs & Stagiaires)** :
-  - Suivi des stages en cours (`ONGOING`, `COMPLETED`, `TERMINATED`).
-  - Gestion des tâches du stagiaire sous forme de tableau Kanban (`TODO`, `IN_PROGRESS`, `DONE`).
-  - Évaluations de mi-parcours (`MID_TERM`) et finales (`FINAL`) portant sur les compétences techniques, les soft skills et l'autonomie.
-  - Gestion documentaire (conventions, rapports, attestations) et journal d'activité (`ActivityLog`).
+### 1. 🌟 Portail Public & Espace Stagiaire
+- **Vitrine des Offres de Stage** : Consultation attractive des offres avec filtres par département, durée et compétences requises.
+- **Formulaire de Candidature Rapide** : Dépôt direct sans inscription obligatoire (nom, email, téléphone, école, lien CV).
+- **Espace Personnel Stagiaire** (`/espace-stagiaire`) :
+  - Suivi du sujet de stage, des dates et de l'encadrant assigné.
+  - **Tableau de Bord Tâches (Kanban Stagiaire)** : passage interactif des objectifs (`À Réaliser`, `En Cours`, `Validé & Terminé`).
+  - Téléchargement des conventions signées et attestations de stage générées.
+
+### 2. 💼 Espace Recruteurs & RH
+- **Dashboard Analytique RH** (`/dashboard`) :
+  - **KPIs en temps réel** : Offres ouvertes, Nouveaux candidats, Stagiaires actifs, Moyenne des évaluations (/20).
+  - Graphiques de répartition du pipeline de recrutement et flux d'activité récent (`ActivityLog`).
+- **Pipeline de Recrutement Interactif** (`/kanban`) :
+  - Tableau Kanban complet avec **Drag & Drop fluide** (`@angular/cdk/drag-drop`).
+  - 4 colonnes de qualification : `Nouveau (NEW)` ➔ `Présélection (SCREENING)` ➔ `Entretien (INTERVIEW)` ➔ `Accepté (ACCEPTED)`.
+  - Mise à jour immédiate du statut en base de données avec recalcul du score et historique des notes.
+- **Gestion Complète des Offres de Stage** : Création, édition, publication et archivage (`OPEN`, `DRAFT`, `CLOSED`).
+
+### 3. 👨‍🏫 Espace Encadrants & Tuteurs
+- **Supervision des Stagiaires assignés** : Suivi des livrables et assignation de nouvelles tâches avec date d'échéance.
+- **Grille d'Évaluation Multicritères** : Notation de mi-parcours (`MID_TERM`) et finale (`FINAL`) sur les compétences techniques, les soft skills et l'autonomie.
 
 ---
 
-## Rôles Utilisateurs
+## Modèle de Rôles & Sécurité (RBAC)
 
-| Rôle | Code | Responsabilités principales |
+Les rôles sont isolés dans une table dédiée `user_roles` et contrôlés par des annotations de sécurité Spring `@PreAuthorize` et des Guards Angular :
+
+| Rôle | Code | Droits & Responsabilités |
 | :--- | :--- | :--- |
-| **Administrateur** | `ADMIN` | Gestion globale du système, des départements, des offres et des utilisateurs |
-| **Ressources Humaines** | `HR` | Gestion des offres, suivi global du recrutement, validation des stages et statistiques |
-| **Recruteur** | `RECRUITER` | Création d'offres, qualification des candidatures, gestion du pipeline Kanban |
-| **Tuteur / Encadrant** | `TUTOR` | Attribution et suivi des tâches des stagiaires, évaluations de mi-parcours et de fin de stage |
-| **Stagiaire** | `INTERN` | Suivi de ses objectifs, mise à jour de l'avancement des tâches et consultation des évaluations |
+| **Administrateur** | `ADMIN` | Accès global, gestion des départements, utilisateurs et logs d'activité |
+| **Ressources Humaines** | `HR` | Gestion des offres, candidatures, validation des stages et métriques globales |
+| **Recruteur** | `RECRUITER` | Publication d'offres, gestion du pipeline Kanban, notation et planification d'entretiens |
+| **Tuteur / Encadrant** | `TUTOR` | Attribution et validation des tâches de ses stagiaires, remplissage des évaluations |
+| **Stagiaire** | `INTERN` | Consultation de son stage, avancement de ses tâches, accès aux conventions et attestations |
 
 ---
 
-## Stack Technique
+## Architecture & Stack Technique
 
 ### Backend (`/backend`)
-- **Langage** : Java 21
-- **Framework** : Spring Boot 3.3.4 (`Spring Web`, `Spring Data JPA`, `Spring Security`, `Spring Validation`)
-- **Base de données** : PostgreSQL (avec support H2 en développement)
-- **Sécurité** : JJWT (`0.12.6`) pour l'authentification JWT
+- **Langage** : Java 21 LTS (Eclipse Adoptium)
+- **Framework** : Spring Boot 3.3.4
+  - `spring-boot-starter-web` (REST APIs)
+  - `spring-boot-starter-data-jpa` (Hibernate ORM 6.5)
+  - `spring-boot-starter-security` (Spring Security 6)
+  - `spring-boot-starter-validation` (Validation des DTOs)
+- **Sécurité** : JJWT `0.12.6` (Authentification stateless Bearer token)
+- **Base de données** : PostgreSQL 17 (port `5433`, base `gestagy_db`)
 - **Documentation API** : SpringDoc OpenAPI 3 / Swagger UI (`2.6.0`)
-- **Outils** : Maven, Lombok
+- **Build Tool** : Apache Maven 3.9+
 
 ### Frontend (`/frontend`)
-- **Framework** : Angular 22 (`@angular/core`, `@angular/router`, `@angular/forms`)
-- **Langage** : TypeScript 6.0
-- **Tests** : Vitest & JSDom
+- **Framework** : Angular 22 (Mode **Zoneless** haute performance via `provideZonelessChangeDetection`)
+- **Architecture** : Standalone Components, Signal-based reactivity, Angular Router
+- **UI & Design** : Tailwind CSS, typographie *Plus Jakarta Sans*, cartes douces `rounded-3xl`
+- **Interactivité** : `@angular/cdk/drag-drop` (Kanban), formulaires réactifs
+- **Client HTTP** : `provideHttpClient` avec intercepteur d'authentification Bearer JWT
 
 ---
 
-## Structure du Projet
+## Structure du Répertoire
 
 ```text
-GeStagy/
-├── backend/                        # API REST Spring Boot
+GyStagy/
+├── backend/                        # API REST Spring Boot 3
 │   ├── src/main/java/com/gestagy/
-│   │   ├── config/                 # Initialisation des données de démo (DataSeeder)
-│   │   ├── controller/             # Endpoints REST (Auth, Public, Recruitment, Internship)
-│   │   ├── dto/                    # Objets de transfert de données (DTOs)
-│   │   ├── model/                  # Entités JPA (User, InternshipOffer, Candidate, Internship, Task, Evaluation...)
+│   │   ├── config/                 # DataSeeder (Comptes et données de démo)
+│   │   ├── controller/             # Contrôleurs REST (Auth, Public, Recruitment, Internship)
+│   │   ├── dto/                    # Objets de transfert de données typés
+│   │   ├── model/                  # Entités JPA (User, Role, Offer, Candidate, Task, Evaluation...)
 │   │   ├── repository/             # Interfaces Spring Data JPA
-│   │   ├── security/               # Configuration Spring Security & Filtres JWT
-│   │   └── service/                # Logique métier
+│   │   ├── security/               # Filtre OncePerRequestFilter, WebSecurityConfig, JwtUtils
+│   │   └── service/                # Logique métier et transactions
 │   ├── src/main/resources/
-│   │   └── application.properties  # Configuration serveur, BDD et JWT
+│   │   └── application.properties  # Ports (8081), URL PostgreSQL (5433), Clé JWT
 │   └── pom.xml
-├── frontend/                       # Application cliente Angular
-│   ├── src/app/                    # Composants, routes et configuration Angular
+├── frontend/                       # Client Web Angular 22
+│   ├── src/app/
+│   │   ├── components/
+│   │   │   ├── navbar/             # Barre de navigation responsive avec profil connecté
+│   │   │   ├── offers/             # Vitrine des offres publiques + modal de candidature
+│   │   │   ├── dashboard/          # Métriques KPIs et statistiques de recrutement
+│   │   │   ├── kanban/             # Pipeline Drag & Drop de qualification des candidats
+│   │   │   ├── intern-space/       # Feuille de route et tâches interactives du stagiaire
+│   │   │   └── login/              # Interface de connexion rapide par profil
+│   │   ├── models/                 # Interfaces TypeScript
+│   │   ├── services/               # Services API REST et AuthService
+│   │   ├── app.config.ts           # Configuration Zoneless & HTTP
+│   │   └── app.routes.ts           # Routage de l'application
 │   ├── angular.json
 │   └── package.json
-├── Diagram sequence/               # Diagrammes de séquence UML (PDF)
-│   ├── VueGlobaleDePlatforme.pdf
-│   ├── sequence_Authentification.pdf
-│   ├── candidatureOffre.pdf
-│   ├── pipeLigneDeRecrutement.pdf
-│   └── EvaluationDeStagiare.pdf
-├── Diagram Classe.pdf              # Diagramme de classes UML
-└── diagram UseCase.pdf             # Diagramme de cas d'utilisation UML
+├── Diagram sequence/               # Diagrammes de séquence UML officiels
+└── Diagram Classe.pdf              # Diagramme de classes UML
 ```
 
 ---
 
-## Installation et Démarrage
+## Guide d'Installation et Exécution
 
-### Prérequis
-- **JDK 21** ou supérieur
-- **Maven 3.9+**
-- **Node.js 20+** et **npm 12+**
+### 1. Prérequis
+- **Java JDK 21**
+- **Apache Maven 3.9+**
+- **Node.js 20+** / **npm 12+**
 - **PostgreSQL 15+**
 
-### 1. Configuration de la Base de Données
-Créez une base de données PostgreSQL nommée `gestagy_db` :
+---
 
+### 2. Configuration PostgreSQL
+Créez la base de données dans votre invite `psql` :
 ```sql
 CREATE DATABASE gestagy_db;
 ```
 
-Par défaut, le backend utilise les variables d'environnement suivantes (ou leurs valeurs par défaut définies dans `backend/src/main/resources/application.properties`) :
-- `DB_URL` : `jdbc:postgresql://localhost:5432/gestagy_db`
-- `DB_USERNAME` : `postgres`
-- `DB_PASSWORD` : `postgres`
+> **Paramètres configurés par défaut dans `application.properties` :**
+> - Port PostgreSQL : `5433` (ou `5432`)
+> - Utilisateur : `postgres`
+> - Mot de passe : `postgresql`
+> - Port du serveur Backend : `8081`
 
-### 2. Lancer le Backend (Spring Boot)
+---
 
-```bash
+### 3. Lancer le Backend Spring Boot
+
+Ouvrez un terminal PowerShell :
+```powershell
+# 1. Se positionner dans le backend
 cd backend
-mvn clean install
-mvn spring-boot:run
+
+# 2. Configurer Java 21 (si Java 11 est actif par défaut sur la machine)
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;" + $env:Path
+
+# 3. Lancer le JAR exécutable repackagé
+java -jar target/gestagy-backend-1.0.0-SNAPSHOT.jar
 ```
+*(Alternative avec Maven : `mvn spring-boot:run`)*
 
-- L'API sera disponible sur : `http://localhost:8080`
-- Documentation interactive **Swagger UI** : `http://localhost:8080/swagger-ui.html`
-- Spécification **OpenAPI JSON** : `http://localhost:8080/v3/api-docs`
+- **API REST :** `http://localhost:8081`
+- **Swagger UI interactif :** 👉 `http://localhost:8081/swagger-ui.html`
 
-### 3. Lancer le Frontend (Angular)
+---
 
-```bash
+### 4. Lancer le Frontend Angular
+
+Dans un second terminal :
+```powershell
 cd frontend
-npm install
-npm start
+ng serve --open
 ```
 
-- L'application web sera accessible sur : `http://localhost:4200`
+- **Application Web GeStagy :** 👉 `http://localhost:4200`
 
 ---
 
-## Comptes de Démonstration (DataSeeder)
+## Comptes de Test Pré-chargés (`DataSeeder`)
 
-Au premier démarrage du backend sur une base vide, le composant `DataSeeder` génère automatiquement des départements, des offres de stage, des candidats, des stages en cours et les comptes utilisateurs suivants :
+Au démarrage, le système insère automatiquement des départements, 5 offres de stage, 10 candidats qualifiés et les comptes suivants :
 
-> **Mot de passe commun à tous les comptes de test :** `password123`
+> **Mot de passe commun :** `password123`
 
-| Rôle | Email | Nom Complet |
+| Rôle | Email | Ce que vous pouvez tester |
 | :--- | :--- | :--- |
-| **ADMIN** | `admin@gestagy.com` | Admin 2026 |
-| **HR** | `rh@gestagy.com` | Sarah Benali |
-| **RECRUITER** | `recruteur@gestagy.com` | Youssef Amrani |
-| **TUTOR** | `tuteur@gestagy.com` | Alexandre Martin |
-| **INTERN** | `stagiaire@gestagy.com` | Mehdi Mansouri |
-| **INTERN** | `lina@gestagy.com` | Lina Tazi |
+| **RH** | `rh@gestagy.com` | Dashboard complet, KPIs, gestion des offres & candidats |
+| **Recruteur** | `recruteur@gestagy.com` | Pipeline Kanban Drag & Drop, qualification, notation |
+| **Encadrant** | `tuteur@gestagy.com` | Suivi de stage, assignation de tâches, évaluations |
+| **Stagiaire** | `stagiaire@gestagy.com` | Espace personnel stagiaire, validation de ses tâches |
+| **Admin** | `admin@gestagy.com` | Supervision globale de la plateforme |
 
 ---
 
-## Aperçu des Endpoints API
+## Endpoints REST Clés
 
-### Authentification (`/api/auth`)
-- `POST /api/auth/register` — Inscription d'un nouvel utilisateur
-- `POST /api/auth/login` — Connexion et récupération du token JWT
-- `GET /api/auth/me` — Récupération du profil de l'utilisateur connecté
-
-### Portail Public (`/api/public`)
-- `GET /api/public/offers` — Lister les offres de stage ouvertes
-- `GET /api/public/offers/{id}` — Détail d'une offre de stage
-- `POST /api/public/offers/{id}/apply` — Soumettre une candidature à une offre
-
-### Recrutement & RH (`/api/recruitment`)
-- `GET /api/recruitment/offers` — Lister toutes les offres (`ADMIN`, `HR`, `RECRUITER`)
-- `POST /api/recruitment/offers` — Créer une offre de stage
-- `PUT /api/recruitment/offers/{id}` — Modifier une offre existante
-- `DELETE /api/recruitment/offers/{id}` — Supprimer une offre (`ADMIN`, `HR`)
-- `GET /api/recruitment/candidates` — Lister tous les candidats pour le Kanban
-- `GET /api/recruitment/offers/{offerId}/candidates` — Lister les candidats d'une offre
-- `PATCH /api/recruitment/candidates/{id}/status` — Mettre à jour le statut Kanban d'un candidat
-- `PATCH /api/recruitment/candidates/{id}/score` — Mettre à jour le score et les notes d'un candidat
-- `GET /api/recruitment/dashboard/stats` — Statistiques du tableau de bord RH
-
-### Stages & Suivi (`/api/internships`)
-- `GET /api/internships` — Lister tous les stages (`ADMIN`, `HR`, `RECRUITER`)
-- `GET /api/internships/{id}` — Détails d'un stage (`ADMIN`, `HR`, `TUTOR`, `INTERN`)
-- `GET /api/internships/{id}/tasks` — Lister les tâches d'un stage
-- `POST /api/internships/{id}/tasks` — Assigner une nouvelle tâche (`ADMIN`, `HR`, `TUTOR`)
-- `PATCH /api/internships/tasks/{taskId}/status` — Changer le statut d'une tâche (`TODO`, `IN_PROGRESS`, `DONE`)
-
+| Domaine | Méthode & Route | Accès RBAC | Description |
+| :--- | :--- | :--- | :--- |
+| **Auth** | `POST /api/auth/login` | Public | Authentification et émission du Bearer JWT |
+| **Auth** | `POST /api/auth/register` | Public | Inscription d'un utilisateur |
+| **Auth** | `GET /api/auth/me` | Authentifié | Profil et rôles de l'utilisateur connecté |
+| **Public** | `GET /api/public/offers` | Public | Liste des offres ouvertes |
+| **Public** | `POST /api/public/offers/{id}/apply` | Public | Dépôt d'une candidature avec CV |
+| **Recrutement** | `GET /api/recruitment/dashboard/stats` | `HR`, `ADMIN`, `RECRUITER` | Statistiques et métriques RH en direct |
+| **Recrutement** | `GET /api/recruitment/candidates` | `HR`, `ADMIN`, `RECRUITER` | Candidats classés pour le Kanban |
+| **Recrutement** | `PATCH /api/recruitment/candidates/{id}/status` | `HR`, `ADMIN`, `RECRUITER` | Changement de statut (Drag & Drop) |
+| **Stages** | `GET /api/internships` | `HR`, `ADMIN`, `RECRUITER` | Liste des stages en cours |
+| **Tâches** | `GET /api/internships/{id}/tasks` | `TUTOR`, `INTERN`, `HR` | Liste des tâches de stage |
+| **Tâches** | `PATCH /api/internships/tasks/{id}/status` | `TUTOR`, `INTERN` | Mise à jour du statut d'une tâche |
