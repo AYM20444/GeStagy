@@ -4,18 +4,20 @@ import com.gestagy.dto.AuthDtos;
 import com.gestagy.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Endpoints de connexion, inscription et profil utilisateur")
+@Tag(name = "Authentication & Profile", description = "Endpoints de connexion, inscription et gestion du profil utilisateur")
 public class AuthController {
 
     private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/register")
     @Operation(summary = "Inscription d'un utilisateur (stagiaire ou recruteur)")
@@ -37,5 +39,16 @@ public class AuthController {
         }
         return ResponseEntity.ok(authService.getCurrentProfile(authentication.getName()));
     }
-}
 
+    @PutMapping("/me")
+    @Operation(summary = "Mettre à jour le profil de l'utilisateur connecté")
+    public ResponseEntity<AuthDtos.UserProfileResponse> updateCurrentUser(
+            @RequestBody AuthDtos.UpdateProfileRequest request,
+            Authentication authentication
+    ) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(authService.updateProfile(authentication.getName(), request));
+    }
+}

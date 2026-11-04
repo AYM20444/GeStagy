@@ -6,7 +6,6 @@ import com.gestagy.model.Department;
 import com.gestagy.model.InternshipOffer;
 import com.gestagy.model.User;
 import com.gestagy.repository.*;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,14 +13,30 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class OfferService {
 
     private final InternshipOfferRepository offerRepository;
     private final DepartmentRepository departmentRepository;
     private final CandidateRepository candidateRepository;
+    private final InternshipRepository internshipRepository;
     private final UserRepository userRepository;
     private final ActivityLogRepository activityLogRepository;
+
+    public OfferService(
+            InternshipOfferRepository offerRepository,
+            DepartmentRepository departmentRepository,
+            CandidateRepository candidateRepository,
+            InternshipRepository internshipRepository,
+            UserRepository userRepository,
+            ActivityLogRepository activityLogRepository
+    ) {
+        this.offerRepository = offerRepository;
+        this.departmentRepository = departmentRepository;
+        this.candidateRepository = candidateRepository;
+        this.internshipRepository = internshipRepository;
+        this.userRepository = userRepository;
+        this.activityLogRepository = activityLogRepository;
+    }
 
     @Transactional(readOnly = true)
     public List<OfferDtos.OfferResponse> getPublicOffers() {
@@ -49,16 +64,16 @@ public class OfferService {
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new IllegalArgumentException("Département non trouvé"));
 
-        User user = userRepository.findByEmail(userEmail).orElse(null);
+        User user = userEmail != null ? userRepository.findByEmail(userEmail).orElse(null) : null;
 
         InternshipOffer offer = InternshipOffer.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .department(department)
                 .skills(request.getSkills())
-                .durationMonths(request.getDurationMonths())
+                .durationMonths(request.getDurationMonths() != null ? request.getDurationMonths() : 6)
                 .startDate(request.getStartDate())
-                .location(request.getLocation())
+                .location(request.getLocation() != null ? request.getLocation() : "Casablanca / Hybride")
                 .status(request.getStatus() != null ? request.getStatus() : InternshipOffer.OfferStatus.OPEN)
                 .createdBy(user)
                 .build();
@@ -70,7 +85,7 @@ public class OfferService {
                 .action("OFFER_CREATED")
                 .entity("InternshipOffer")
                 .entityId(saved.getId())
-                .details("Création de l'offre: " + saved.getTitle())
+                .details("Création de l'offre : " + saved.getTitle())
                 .build());
 
         return mapToDto(saved);
@@ -81,29 +96,29 @@ public class OfferService {
         InternshipOffer offer = offerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Offre introuvable: " + id));
 
-        Department department = departmentRepository.findById(request.getDepartmentId())
-                .orElseThrow(() -> new IllegalArgumentException("Département introuvable"));
-
-        offer.setTitle(request.getTitle());
-        offer.setDescription(request.getDescription());
-        offer.setDepartment(department);
-        offer.setSkills(request.getSkills());
-        offer.setDurationMonths(request.getDurationMonths());
-        offer.setStartDate(request.getStartDate());
-        offer.setLocation(request.getLocation());
-        if (request.getStatus() != null) {
-            offer.setStatus(request.getStatus());
+        if (request.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new IllegalArgumentException("Département introuvable"));
+            offer.setDepartment(department);
         }
+
+        if (request.getTitle() != null) offer.setTitle(request.getTitle());
+        if (request.getDescription() != null) offer.setDescription(request.getDescription());
+        if (request.getSkills() != null) offer.setSkills(request.getSkills());
+        if (request.getDurationMonths() != null) offer.setDurationMonths(request.getDurationMonths());
+        if (request.getStartDate() != null) offer.setStartDate(request.getStartDate());
+        if (request.getLocation() != null) offer.setLocation(request.getLocation());
+        if (request.getStatus() != null) offer.setStatus(request.getStatus());
 
         InternshipOffer saved = offerRepository.save(offer);
 
-        User user = userRepository.findByEmail(userEmail).orElse(null);
+        User user = userEmail != null ? userRepository.findByEmail(userEmail).orElse(null) : null;
         activityLogRepository.save(ActivityLog.builder()
                 .user(user)
                 .action("OFFER_UPDATED")
                 .entity("InternshipOffer")
                 .entityId(saved.getId())
-                .details("Mise à jour de l'offre: " + saved.getTitle())
+                .details("Mise à jour de l'offre : " + saved.getTitle() + " (" + saved.getStatus() + ")")
                 .build());
 
         return mapToDto(saved);
@@ -114,8 +129,67 @@ public class OfferService {
         offerRepository.deleteById(id);
     }
 
+    // --- DEPARTMENTS ---
+    @Transactional(readOnly = true)
+    public List<OfferDtos.DepartmentResponse> getAllDepartments() {
+        List<InternshipOffer> allOffers = offerRepository.findAll();
+        return departmentRepository.findAll().stream()
+                .map(d -> {
+                    long offersCount = allOffers.stream()
+                            .filter(o -> o.getDepartment() != null && o.getDepartment().getId().equals(d.getId()))
+                            .count();
+                    long internshipsCount = internshipRepository.findByDepartmentId(d.getId()).size();
+                    return OfferDtos.DepartmentResponse.builder()
+                            .id(d.getId())
+                            .name(d.getName())
+                            .description(d.getDescription())
+                            .offersCount(offersCount)
+                            .internshipsCount(internshipsCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public OfferDtos.DepartmentResponse createDepartment(OfferDtos.DepartmentRequest request) {
+        Department d = Department.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .build();
+        Department saved = departmentRepository.save(d);
+        return OfferDtos.DepartmentResponse.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .description(saved.getDescription())
+                .offersCount(0)
+                .internshipsCount(0)
+                .build();
+    }
+
+    @Transactional
+    public OfferDtos.DepartmentResponse updateDepartment(Long id, OfferDtos.DepartmentRequest request) {
+        Department d = departmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Département introuvable: " + id));
+        if (request.getName() != null) d.setName(request.getName());
+        if (request.getDescription() != null) d.setDescription(request.getDescription());
+        Department saved = departmentRepository.save(d);
+        return OfferDtos.DepartmentResponse.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .description(saved.getDescription())
+                .offersCount(0)
+                .internshipsCount(internshipRepository.findByDepartmentId(saved.getId()).size())
+                .build();
+    }
+
     private OfferDtos.OfferResponse mapToDto(InternshipOffer offer) {
         long candidatesCount = candidateRepository.findByOfferId(offer.getId()).size();
+        String createdByName = "";
+        if (offer.getCreatedBy() != null) {
+            createdByName = offer.getCreatedBy().getProfile() != null
+                    ? offer.getCreatedBy().getProfile().getFullName()
+                    : offer.getCreatedBy().getEmail();
+        }
 
         return OfferDtos.OfferResponse.builder()
                 .id(offer.getId())
@@ -129,8 +203,8 @@ public class OfferService {
                 .location(offer.getLocation())
                 .status(offer.getStatus())
                 .candidatesCount(candidatesCount)
+                .createdByName(createdByName)
                 .createdAt(offer.getCreatedAt())
                 .build();
     }
 }
-
