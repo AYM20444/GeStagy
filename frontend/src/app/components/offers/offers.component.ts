@@ -3,58 +3,91 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { InternshipOffer } from '../../models/types';
+import {
+  CountUpDirective,
+  MagneticButtonDirective,
+  RevealOnScrollDirective,
+  Tilt3dDirective
+} from '../../directives/tactile-3d.directives';
 
 @Component({
   selector: 'app-offers',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    Tilt3dDirective,
+    MagneticButtonDirective,
+    CountUpDirective,
+    RevealOnScrollDirective
+  ],
   template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <!-- Hero Banner -->
-      <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-violet-900 rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-xl mb-8">
+      <!-- 3D Glass Hero Banner -->
+      <div
+        tilt3d
+        [tiltMaxAngle]="3"
+        [tiltScale]="1.008"
+        revealOnScroll
+        class="card-3d-glass rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden mb-8">
+
         <div class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           <div class="lg:col-span-2">
-            <span class="inline-block px-3 py-1 bg-indigo-500/30 border border-indigo-400/30 rounded-full text-xs font-bold text-indigo-200 uppercase tracking-wider mb-3">
-              ✨ Campagne PFE &amp; Stages 2026
-            </span>
-            <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-3 leading-tight">
-              Propulsez votre carrière avec <span class="text-indigo-300">GeStagy</span>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/15 border border-emerald-500/30 rounded-full text-xs font-bold text-emerald-400 uppercase tracking-wider mb-4">
+              <span class="live-pulse-dot"></span>
+              <span>LIVE CAMPAIGN • PFE &amp; STAGES 2026</span>
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl font-black tracking-tight mb-3 leading-tight">
+              Propulsez votre carrière dans l'univers <span class="text-cyber-gradient">GeStagy 3D</span>
             </h1>
-            <p class="text-slate-300 text-sm sm:text-base mb-5 max-w-2xl">
-              Explorez nos sujets de stage à fort impact, testez instantanément votre compatibilité technique grâce au <strong>Smart Skill Matcher</strong> et postulez en ligne avec votre CV et lettre de motivation.
+            <p class="text-slate-300 text-sm sm:text-base mb-6 max-w-2xl leading-relaxed">
+              Explorez nos sujets de stage à fort impact, testez instantanément votre compatibilité technique grâce au <strong>Smart Skill Matcher</strong> temps réel et postulez en un clic avec votre CV et lettre de motivation.
             </p>
-            <div class="flex flex-wrap gap-2 text-xs font-semibold text-indigo-100">
-              <span class="bg-white/10 backdrop-blur px-3 py-1.5 rounded-xl border border-white/10">🎯 Matching Compétences Temps Réel</span>
-              <span class="bg-white/10 backdrop-blur px-3 py-1.5 rounded-xl border border-white/10">👨‍🏫 Mentorat Tech Lead dédié</span>
-              <span class="bg-white/10 backdrop-blur px-3 py-1.5 rounded-xl border border-white/10">💼 75% de pré-embauche CDI</span>
+            <div class="flex flex-wrap gap-2.5 text-xs font-bold text-slate-200">
+              <span class="bg-white/5 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#00F0FF] shadow-[0_0_8px_#00F0FF]"></span>
+                Matching Compétences Temps Réel
+              </span>
+              <span class="bg-white/5 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10">
+                👨‍🏫 Mentorat Tech Lead dédié
+              </span>
+              <span class="bg-white/5 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10">
+                💼 <span [countUp]="75" countSuffix="%">75%</span> de pré-embauche CDI
+              </span>
             </div>
           </div>
 
-          <!-- Interactive Smart Skill Matcher Widget -->
-          <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5">
+          <!-- Interactive Smart Skill Matcher 3D Widget -->
+          <div class="bg-[#05050A]/80 backdrop-blur-xl border border-white/15 rounded-2xl p-5 shadow-[0_12px_32px_rgba(0,0,0,0.65)]">
             <div class="flex justify-between items-center mb-2">
-              <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+              <h3 class="text-sm font-black text-white flex items-center gap-2">
                 🧠 Smart Skill Matcher
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+                  AI LIVE
+                </span>
               </h3>
               @if (selectedUserSkills.length > 0) {
-                <button (click)="selectedUserSkills = []" class="text-[11px] text-indigo-200 hover:text-white underline">
+                <button (click)="selectedUserSkills = []" class="text-[11px] text-cyan-400 hover:underline font-bold">
                   Réinitialiser
                 </button>
               }
             </div>
-            <p class="text-[11px] text-indigo-200 mb-3">
-              Cliquez sur vos compétences pour calculer votre score de compatibilité sur chaque offre :
+            <p class="text-[11px] text-slate-400 mb-3.5">
+              Sélectionnez vos compétences pour calculer votre télémétrie de compatibilité sur chaque offre :
             </p>
             <div class="flex flex-wrap gap-1.5">
               @for (skill of allSkillsPool; track skill) {
                 <button
+                  magneticBtn
+                  [magneticStrength]="0.2"
                   type="button"
                   (click)="toggleUserSkill(skill)"
                   class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition"
                   [ngClass]="selectedUserSkills.includes(skill)
-                    ? 'bg-emerald-400 text-slate-950 shadow-sm scale-105'
-                    : 'bg-white/10 text-indigo-100 hover:bg-white/20'">
+                    ? 'btn-3d-primary scale-105'
+                    : 'bg-white/5 text-slate-300 border border-white/10 hover:border-cyan-400/50 hover:text-white'">
                   {{ selectedUserSkills.includes(skill) ? '✓ ' : '+ ' }}{{ skill }}
                 </button>
               }
@@ -63,18 +96,21 @@ import { InternshipOffer } from '../../models/types';
         </div>
       </div>
 
-      <!-- Search & Filters Bar -->
-      <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
+      <!-- Search & Filters Glass Bar -->
+      <div
+        revealOnScroll
+        [revealDelay]="80"
+        class="card-3d-glass rounded-2xl p-4 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
         <div class="lg:col-span-2">
           <input
             [(ngModel)]="searchQuery"
             placeholder="🔍 Rechercher par titre, technologie (ex: Angular, Spring, IA, Figma)..."
-            class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+            class="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm outline-none">
         </div>
         <div>
           <select
             [(ngModel)]="selectedDepartment"
-            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            class="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm outline-none">
             <option value="">🏢 Tous les départements</option>
             @for (dept of departmentsList; track dept) {
               <option [value]="dept">{{ dept }}</option>
@@ -84,7 +120,7 @@ import { InternshipOffer } from '../../models/types';
         <div>
           <select
             [(ngModel)]="selectedDuration"
-            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            class="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm outline-none">
             <option value="">⏱️ Toutes les durées</option>
             <option value="3">3 mois</option>
             <option value="4">4 mois</option>
@@ -93,24 +129,33 @@ import { InternshipOffer } from '../../models/types';
         </div>
       </div>
 
-      <!-- Offres Header -->
-      <div class="flex justify-between items-center mb-5">
+      <!-- Offres Header with Live Counter -->
+      <div class="flex justify-between items-center mb-6">
         <div>
-          <h2 class="text-xl font-black text-slate-900">Offres de stage ouvertes</h2>
-          <p class="text-xs text-slate-500">Consultez les détails ou déposez votre dossier de candidature en quelques secondes</p>
+          <h2 class="text-xl font-black text-white flex items-center gap-2.5">
+            Offres de stage ouvertes
+            <span class="live-pulse-dot"></span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">Survolez les cartes en 3D ou déposez votre dossier de candidature en quelques secondes</p>
         </div>
-        <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-200/60">
-          {{ filteredOffers.length }} offre(s) disponible(s)
+        <span class="text-xs font-black px-3.5 py-1.5 rounded-full bg-indigo-50 border flex items-center gap-1.5">
+          <span [countUp]="filteredOffers.length"></span> offre(s) active(s)
         </span>
       </div>
 
-      <!-- Offres Grid -->
+      <!-- 3D Tilt Offres Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (offer of filteredOffers; track offer.id) {
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 hover:shadow-xl transition-all hover:border-indigo-300 flex flex-col justify-between relative">
+        @for (offer of filteredOffers; track offer.id; let idx = $index) {
+          <div
+            tilt3d
+            [tiltMaxAngle]="7"
+            [tiltScale]="1.022"
+            revealOnScroll
+            [revealDelay]="idx * 70"
+            class="card-3d-glass rounded-2xl p-6 flex flex-col justify-between relative">
             <div>
               <div class="flex justify-between items-start gap-2 mb-3">
-                <span class="px-2.5 py-1 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-lg">
+                <span class="px-2.5 py-1 bg-white/5 border border-white/10 text-slate-200 text-[11px] font-bold rounded-lg">
                   {{ offer.departmentName }}
                 </span>
 
@@ -119,12 +164,13 @@ import { InternshipOffer } from '../../models/types';
                     <span
                       class="text-[11px] font-black px-2 py-0.5 rounded-md border"
                       [ngClass]="getMatchScore(offer) >= 60
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'">
+                        ? 'bg-emerald-50 border-emerald-500/40'
+                        : 'bg-amber-50 border-amber-500/40'">
                       ⚡ Match {{ getMatchScore(offer) }}%
                     </span>
                   }
-                  <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  <span class="inline-flex items-center gap-1.5 text-[11px] font-bold bg-emerald-50 px-2.5 py-0.5 rounded-md border">
+                    <span class="live-pulse-dot" style="width:6px;height:6px;"></span>
                     {{ offer.status }}
                   </span>
                 </div>
@@ -132,11 +178,11 @@ import { InternshipOffer } from '../../models/types';
 
               <h3
                 (click)="detailOffer = offer"
-                class="text-base font-extrabold text-slate-900 mb-2 leading-snug hover:text-indigo-600 cursor-pointer transition">
+                class="text-base font-extrabold text-white mb-2 leading-snug hover:text-cyan-400 cursor-pointer transition">
                 {{ offer.title }}
               </h3>
 
-              <p class="text-slate-600 text-xs line-clamp-3 mb-4 leading-relaxed">
+              <p class="text-slate-400 text-xs line-clamp-3 mb-4 leading-relaxed">
                 {{ offer.description }}
               </p>
 
@@ -144,32 +190,34 @@ import { InternshipOffer } from '../../models/types';
               <div class="flex flex-wrap gap-1.5 mb-5">
                 @for (skill of offer.skills; track skill) {
                   <span
-                    class="text-[11px] font-semibold px-2 py-0.5 rounded-md transition"
+                    class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md transition border"
                     [ngClass]="selectedUserSkills.includes(skill)
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold'
-                      : 'bg-indigo-50 text-indigo-700'">
+                      ? 'bg-emerald-50 font-black shadow-[0_0_12px_rgba(16,185,129,0.35)]'
+                      : 'bg-indigo-50'">
                     {{ skill }}
                   </span>
                 }
               </div>
             </div>
 
-            <!-- Footer Card -->
-            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-              <div class="text-xs text-slate-500 font-medium">
+            <!-- Footer Card with 3D Tactile Buttons -->
+            <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+              <div class="text-xs text-slate-400 font-medium">
                 <span>📍 {{ offer.location }}</span>
                 <span class="mx-1">•</span>
                 <span>⏱️ {{ offer.durationMonths }} mois</span>
               </div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-2">
                 <button
+                  magneticBtn
                   (click)="detailOffer = offer"
-                  class="px-2.5 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-xl transition">
+                  class="px-3 py-1.5 text-xs font-bold rounded-xl btn-3d-glass">
                   Détails
                 </button>
                 <button
+                  magneticBtn
                   (click)="openApplyModal(offer)"
-                  class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition">
+                  class="px-3.5 py-1.5 text-xs font-black rounded-xl btn-3d-primary">
                   Postuler →
                 </button>
               </div>
@@ -178,52 +226,53 @@ import { InternshipOffer } from '../../models/types';
         }
       </div>
 
-      <!-- Modal Détail de l'Offre -->
+      <!-- Modal 3D Détail de l'Offre -->
       @if (detailOffer) {
-        <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
+        <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div tilt3d [tiltMaxAngle]="4" class="card-3d-glass rounded-3xl max-w-xl w-full p-6 sm:p-8">
             <div class="flex justify-between items-start gap-4 mb-4">
               <div>
-                <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg">
+                <span class="px-2.5 py-1 bg-indigo-50 border text-xs font-bold rounded-lg">
                   {{ detailOffer.departmentName }}
                 </span>
-                <h3 class="text-xl font-black text-slate-900 mt-2">{{ detailOffer.title }}</h3>
+                <h3 class="text-xl font-black text-white mt-2">{{ detailOffer.title }}</h3>
               </div>
-              <button (click)="detailOffer = null" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+              <button (click)="detailOffer = null" class="text-slate-400 hover:text-white text-lg">✕</button>
             </div>
 
-            <div class="grid grid-cols-3 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 mb-4 text-xs">
+            <div class="grid grid-cols-3 gap-3 bg-[#05050A]/80 p-3.5 rounded-2xl border border-white/10 mb-4 text-xs">
               <div>
                 <span class="text-slate-400 block">Localisation</span>
-                <strong class="text-slate-800">📍 {{ detailOffer.location }}</strong>
+                <strong class="text-white">📍 {{ detailOffer.location }}</strong>
               </div>
               <div>
                 <span class="text-slate-400 block">Durée du stage</span>
-                <strong class="text-slate-800">⏱️ {{ detailOffer.durationMonths }} mois</strong>
+                <strong class="text-white">⏱️ {{ detailOffer.durationMonths }} mois</strong>
               </div>
               <div>
                 <span class="text-slate-400 block">Démarrage prévu</span>
-                <strong class="text-slate-800">📅 {{ detailOffer.startDate || 'Immédiat' }}</strong>
+                <strong class="text-white">📅 {{ detailOffer.startDate || 'Immédiat' }}</strong>
               </div>
             </div>
 
             <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1">Description &amp; Missions</h4>
-            <p class="text-sm text-slate-700 leading-relaxed mb-4">{{ detailOffer.description }}</p>
+            <p class="text-sm text-slate-200 leading-relaxed mb-4">{{ detailOffer.description }}</p>
 
             <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Compétences recherchées</h4>
             <div class="flex flex-wrap gap-1.5 mb-6">
               @for (s of detailOffer.skills; track s) {
-                <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg">{{ s }}</span>
+                <span class="px-2.5 py-1 bg-indigo-50 border text-xs font-bold rounded-lg">{{ s }}</span>
               }
             </div>
 
-            <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-              <button (click)="detailOffer = null" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600">
+            <div class="flex justify-end gap-2.5 pt-4 border-t border-white/10">
+              <button magneticBtn (click)="detailOffer = null" class="px-4 py-2 rounded-xl text-xs font-bold btn-3d-glass">
                 Fermer
               </button>
               <button
+                magneticBtn
                 (click)="openApplyModal(detailOffer); detailOffer = null"
-                class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md">
+                class="px-5 py-2 rounded-xl text-xs font-black btn-3d-primary">
                 Postuler à cette offre →
               </button>
             </div>
@@ -231,84 +280,84 @@ import { InternshipOffer } from '../../models/types';
         </div>
       }
 
-      <!-- Modal de Candidature (avec Upload CV & Lettre de motivation) -->
+      <!-- Modal 3D de Candidature (avec Upload CV & Lettre de motivation) -->
       @if (selectedOffer) {
-        <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 my-8">
+        <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div tilt3d [tiltMaxAngle]="3" class="card-3d-glass rounded-3xl max-w-lg w-full p-6 sm:p-8 my-8">
             <div class="flex justify-between items-center mb-3">
-              <h3 class="text-xl font-black text-slate-900">Déposer ma candidature</h3>
-              <button (click)="selectedOffer = null" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+              <h3 class="text-xl font-black text-white">Déposer ma candidature</h3>
+              <button (click)="selectedOffer = null" class="text-slate-400 hover:text-white text-lg">✕</button>
             </div>
 
-            <p class="text-xs text-indigo-600 font-bold mb-4 bg-indigo-50 p-2.5 rounded-xl border border-indigo-100">
+            <p class="text-xs font-bold mb-4 bg-indigo-50 p-2.5 rounded-xl border">
               🎯 Offre : {{ selectedOffer.title }} ({{ selectedOffer.departmentName }})
             </p>
 
             @if (applySuccess) {
-              <div class="bg-emerald-50 text-emerald-800 p-4 rounded-2xl text-xs font-semibold mb-4 border border-emerald-200">
+              <div class="bg-emerald-50 p-4 rounded-2xl text-xs font-semibold mb-4 border">
                 🎉 Votre candidature et vos pièces jointes ont bien été transmises ! Elle apparaît désormais dans la colonne <strong>Nouveau</strong> du Pipeline Kanban RH.
               </div>
             }
 
             @if (validationError) {
-              <div class="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs font-semibold mb-4 border border-rose-200">
+              <div class="bg-rose-50 p-3 rounded-xl text-xs font-semibold mb-4 border">
                 ⚠️ {{ validationError }}
               </div>
             }
 
             <form (ngSubmit)="submitApplication()" class="space-y-3.5">
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Nom &amp; Prénom *</label>
-                <input [(ngModel)]="applyForm.fullName" name="fullName" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Ex: Yasmine El Idrissi">
+                <label class="block text-xs font-bold text-slate-300 mb-1">Nom &amp; Prénom *</label>
+                <input [(ngModel)]="applyForm.fullName" name="fullName" required class="w-full px-3 py-2 rounded-xl text-sm outline-none" placeholder="Ex: Yasmine El Idrissi">
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Email *</label>
-                  <input [(ngModel)]="applyForm.email" name="email" type="email" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="yasmine@ecole.ma">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">Email *</label>
+                  <input [(ngModel)]="applyForm.email" name="email" type="email" required class="w-full px-3 py-2 rounded-xl text-sm outline-none" placeholder="yasmine@ecole.ma">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Téléphone *</label>
-                  <input [(ngModel)]="applyForm.phone" name="phone" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="+212 600 11 22 33">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">Téléphone *</label>
+                  <input [(ngModel)]="applyForm.phone" name="phone" required class="w-full px-3 py-2 rounded-xl text-sm outline-none" placeholder="+212 600 11 22 33">
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">École / Université *</label>
-                <input [(ngModel)]="applyForm.school" name="school" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Ex: ENSIAS, EMI, INPT, FST, UM6P...">
+                <label class="block text-xs font-bold text-slate-300 mb-1">École / Université *</label>
+                <input [(ngModel)]="applyForm.school" name="school" required class="w-full px-3 py-2 rounded-xl text-sm outline-none" placeholder="Ex: ENSIAS, EMI, INPT, FST, UM6P...">
               </div>
 
               <!-- Upload CV (PDF) -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="border border-dashed border-indigo-300 rounded-xl p-3 bg-indigo-50/40">
-                  <label class="block text-xs font-bold text-indigo-900 mb-1">📄 Téléverser CV (PDF)</label>
-                  <input type="file" accept=".pdf,.doc,.docx" (change)="onCvFileSelected($event)" class="text-[11px] text-slate-600 w-full">
+                <div class="border border-dashed border-cyan-500/40 rounded-xl p-3 bg-[#05050A]/60">
+                  <label class="block text-xs font-bold text-cyan-300 mb-1">📄 Téléverser CV (PDF)</label>
+                  <input type="file" accept=".pdf,.doc,.docx" (change)="onCvFileSelected($event)" class="text-[11px] text-slate-400 w-full">
                   @if (uploadingCv) {
-                    <p class="text-[10px] text-indigo-600 font-semibold mt-1">Téléversement en cours...</p>
+                    <p class="text-[10px] text-cyan-400 font-semibold mt-1">Téléversement en cours...</p>
                   } @else if (applyForm.cvUrl) {
-                    <p class="text-[10px] text-emerald-600 font-bold mt-1">✓ Fichier CV joint</p>
+                    <p class="text-[10px] text-emerald-400 font-bold mt-1">✓ Fichier CV joint</p>
                   }
                 </div>
 
-                <div class="border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50">
-                  <label class="block text-xs font-bold text-slate-700 mb-1">✉️ Lettre de motivation</label>
-                  <input type="file" accept=".pdf,.doc,.docx" (change)="onCoverLetterSelected($event)" class="text-[11px] text-slate-600 w-full">
+                <div class="border border-dashed border-white/20 rounded-xl p-3 bg-[#05050A]/60">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">✉️ Lettre de motivation</label>
+                  <input type="file" accept=".pdf,.doc,.docx" (change)="onCoverLetterSelected($event)" class="text-[11px] text-slate-400 w-full">
                   @if (applyForm.coverLetterUrl) {
-                    <p class="text-[10px] text-emerald-600 font-bold mt-1">✓ Lettre jointe</p>
+                    <p class="text-[10px] text-emerald-400 font-bold mt-1">✓ Lettre jointe</p>
                   }
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Motivation / Lien Portfolio ou GitHub</label>
-                <textarea [(ngModel)]="applyForm.notes" name="notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Présentez brièvement vos projets ou collez votre lien GitHub / LinkedIn..."></textarea>
+                <label class="block text-xs font-bold text-slate-300 mb-1">Motivation / Lien Portfolio ou GitHub</label>
+                <textarea [(ngModel)]="applyForm.notes" name="notes" rows="2" class="w-full px-3 py-2 rounded-xl text-xs outline-none" placeholder="Présentez brièvement vos projets ou collez votre lien GitHub / LinkedIn..."></textarea>
               </div>
 
-              <div class="flex justify-end gap-2 pt-3">
-                <button type="button" (click)="selectedOffer = null" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50">
+              <div class="flex justify-end gap-2.5 pt-3">
+                <button magneticBtn type="button" (click)="selectedOffer = null" class="px-4 py-2 rounded-xl text-xs font-bold btn-3d-glass">
                   Annuler
                 </button>
-                <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition">
+                <button magneticBtn type="submit" class="px-5 py-2 rounded-xl text-xs font-black btn-3d-primary">
                   Envoyer ma candidature
                 </button>
               </div>

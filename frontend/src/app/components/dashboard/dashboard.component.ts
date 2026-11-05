@@ -4,72 +4,101 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../models/types';
+import {
+  CountUpDirective,
+  MagneticButtonDirective,
+  RevealOnScrollDirective,
+  Tilt3dDirective
+} from '../../directives/tactile-3d.directives';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    Tilt3dDirective,
+    MagneticButtonDirective,
+    CountUpDirective,
+    RevealOnScrollDirective
+  ],
   template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <!-- Top Header & Actions -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <!-- Top Header & Tactile 3D Actions -->
+      <div revealOnScroll class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 class="text-2xl font-black text-slate-900">Pilotage RH, Offres &amp; Reporting</h1>
-          <p class="text-xs sm:text-sm text-slate-500">Gérez vos offres de stage, suivez les KPI du pipeline et exportez vos rapports d'activité</p>
+          <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-bold text-emerald-400 mb-2">
+            <span class="live-pulse-dot" style="width:6px;height:6px;"></span>
+            <span>LIVE HR TELEMETRY STREAM</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-black text-white">Pilotage RH, Offres &amp; Reporting 3D</h1>
+          <p class="text-xs sm:text-sm text-slate-400">Gérez vos offres de stage, suivez les KPI du pipeline en temps réel et exportez vos rapports d'activité</p>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2.5">
           <button
+            magneticBtn
             (click)="exportCsv()"
-            class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5">
+            class="px-3.5 py-2 text-xs font-bold rounded-xl btn-3d-glass flex items-center gap-1.5">
             📥 Exporter Rapport CSV / Excel
           </button>
           <button
+            magneticBtn
             (click)="openCreateOfferModal()"
-            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition">
+            class="px-4 py-2 text-xs font-black rounded-xl btn-3d-primary">
             + Créer une Offre de Stage
           </button>
-          <a routerLink="/kanban" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition">
+          <a
+            magneticBtn
+            routerLink="/kanban"
+            class="px-4 py-2 text-xs font-bold rounded-xl btn-3d-glass flex items-center">
             🗂️ Pipeline Kanban →
           </a>
         </div>
       </div>
 
-      <!-- 6 KPI Cards -->
+      <!-- 6 3D Tilt KPI Cards with Animated CountUp Telemetry -->
       <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span class="text-xs text-slate-400 font-bold uppercase">Offres Ouvertes</span>
-          <h3 class="text-2xl font-black text-indigo-600 mt-1">{{ stats.openOffersCount }}</h3>
+        <div tilt3d [tiltMaxAngle]="8" revealOnScroll [revealDelay]="0" class="card-3d-glass p-4 rounded-2xl">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] text-slate-400 font-bold uppercase">Offres Ouvertes</span>
+            <span class="live-pulse-dot" style="width:6px;height:6px;"></span>
+          </div>
+          <h3 class="text-2xl font-black mt-1.5" style="color: var(--accent-primary)" [countUp]="stats.openOffersCount"></h3>
           <p class="text-[11px] text-slate-400 mt-0.5">+ {{ stats.draftOffersCount }} brouillon(s)</p>
         </div>
 
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span class="text-xs text-slate-400 font-bold uppercase">Total Candidats</span>
-          <h3 class="text-2xl font-black text-slate-900 mt-1">{{ stats.totalCandidatesCount }}</h3>
-          <p class="text-[11px] text-sky-600 font-semibold mt-0.5">{{ stats.newCandidatesCount }} nouveaux</p>
+        <div tilt3d [tiltMaxAngle]="8" revealOnScroll [revealDelay]="50" class="card-3d-glass p-4 rounded-2xl">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Total Candidats</span>
+          <h3 class="text-2xl font-black text-white mt-1.5" [countUp]="stats.totalCandidatesCount"></h3>
+          <p class="text-[11px] text-cyan-400 font-semibold mt-0.5">{{ stats.newCandidatesCount }} nouveaux</p>
         </div>
 
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span class="text-xs text-slate-400 font-bold uppercase">Entretiens</span>
-          <h3 class="text-2xl font-black text-purple-600 mt-1">{{ stats.totalInterviewsCount }}</h3>
+        <div tilt3d [tiltMaxAngle]="8" revealOnScroll [revealDelay]="100" class="card-3d-glass p-4 rounded-2xl">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Entretiens</span>
+          <h3 class="text-2xl font-black text-[#B829FF] mt-1.5" [countUp]="stats.totalInterviewsCount"></h3>
           <p class="text-[11px] text-slate-400 mt-0.5">Planifiés &amp; évalués</p>
         </div>
 
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span class="text-xs text-slate-400 font-bold uppercase">Stagiaires Actifs</span>
-          <h3 class="text-2xl font-black text-emerald-600 mt-1">{{ stats.ongoingInternshipsCount }}</h3>
+        <div tilt3d [tiltMaxAngle]="8" revealOnScroll [revealDelay]="150" class="card-3d-glass p-4 rounded-2xl">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] text-slate-400 font-bold uppercase">Stagiaires Actifs</span>
+            <span class="live-pulse-dot" style="width:6px;height:6px;"></span>
+          </div>
+          <h3 class="text-2xl font-black text-[#10B981] mt-1.5" [countUp]="stats.ongoingInternshipsCount"></h3>
           <p class="text-[11px] text-slate-400 mt-0.5">En cours d'encadrement</p>
         </div>
 
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span class="text-xs text-slate-400 font-bold uppercase">Score Évaluations</span>
-          <h3 class="text-2xl font-black text-amber-600 mt-1">{{ stats.averageEvaluationScore }}/20</h3>
+        <div tilt3d [tiltMaxAngle]="8" revealOnScroll [revealDelay]="200" class="card-3d-glass p-4 rounded-2xl">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Score Évaluations</span>
+          <h3 class="text-2xl font-black text-[#F59E0B] mt-1.5" [countUp]="stats.averageEvaluationScore" [countDecimals]="1" countSuffix="/20"></h3>
           <p class="text-[11px] text-slate-400 mt-0.5">Moyenne globale</p>
         </div>
 
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span class="text-xs text-slate-400 font-bold uppercase">Docs à Signer</span>
-          <h3 class="text-2xl font-black text-rose-600 mt-1">{{ stats.unsignedDocumentsCount }}</h3>
+        <div tilt3d [tiltMaxAngle]="8" revealOnScroll [revealDelay]="250" class="card-3d-glass p-4 rounded-2xl">
+          <span class="text-[11px] text-slate-400 font-bold uppercase">Docs à Signer</span>
+          <h3 class="text-2xl font-black text-[#EF4444] mt-1.5" [countUp]="stats.unsignedDocumentsCount"></h3>
           <p class="text-[11px] text-slate-400 mt-0.5">Conventions en attente</p>
         </div>
       </div>
@@ -77,80 +106,85 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
       <!-- Funnel Analytics & Recent Activity Log -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
-        <!-- 5-Stage Recruitment Funnel -->
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs">
+        <!-- 5-Stage Recruitment Funnel with 3D Tilt -->
+        <div tilt3d [tiltMaxAngle]="4" revealOnScroll class="lg:col-span-2 card-3d-glass rounded-2xl p-6">
           <div class="flex justify-between items-center mb-5">
             <div>
-              <h3 class="text-base font-extrabold text-slate-900">Entonnoir de Conversion du Recrutement</h3>
-              <p class="text-xs text-slate-500">Répartition en temps réel des {{ stats.totalCandidatesCount }} candidatures sur les 5 colonnes Kanban</p>
+              <h3 class="text-base font-extrabold text-white">Entonnoir de Conversion du Recrutement</h3>
+              <p class="text-xs text-slate-400">Répartition en temps réel des {{ stats.totalCandidatesCount }} candidatures sur les 5 colonnes Kanban</p>
             </div>
-            <a routerLink="/kanban" class="text-xs font-bold text-indigo-600 hover:underline">Ouvrir Kanban →</a>
+            <a magneticBtn routerLink="/kanban" class="text-xs font-bold px-3 py-1.5 rounded-xl btn-3d-glass">
+              Ouvrir Kanban →
+            </a>
           </div>
 
-          <div class="space-y-3.5">
+          <div class="space-y-4">
             <div>
-              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                <span>1. Nouveaux dossiers (NEW)</span>
-                <span>{{ stats.newCandidatesCount }} candidat(s) ({{ getPercent(stats.newCandidatesCount) }}%)</span>
+              <div class="flex justify-between text-xs font-bold text-slate-200 mb-1.5">
+                <span>1. Nouveaux dossiers (APPLIED)</span>
+                <span class="text-[#00F0FF]">{{ stats.newCandidatesCount }} candidat(s) ({{ getPercent(stats.newCandidatesCount) }}%)</span>
               </div>
-              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-sky-500 h-2.5 rounded-full transition-all" [style.width.%]="getPercent(stats.newCandidatesCount)"></div>
+              <div class="w-full bg-[#05050A] h-2.5 rounded-full overflow-hidden border border-white/10">
+                <div class="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-[#00F0FF] to-[#0066FF] shadow-[0_0_12px_#00F0FF]" [style.width.%]="getPercent(stats.newCandidatesCount)"></div>
               </div>
             </div>
 
             <div>
-              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                <span>2. Présélection RH (SCREENING)</span>
-                <span>{{ stats.screeningCandidatesCount }} candidat(s) ({{ getPercent(stats.screeningCandidatesCount) }}%)</span>
+              <div class="flex justify-between text-xs font-bold text-slate-200 mb-1.5">
+                <span>2. Présélection RH (UNDER_REVIEW)</span>
+                <span class="text-[#F59E0B]">{{ stats.screeningCandidatesCount }} candidat(s) ({{ getPercent(stats.screeningCandidatesCount) }}%)</span>
               </div>
-              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-amber-500 h-2.5 rounded-full transition-all" [style.width.%]="getPercent(stats.screeningCandidatesCount)"></div>
+              <div class="w-full bg-[#05050A] h-2.5 rounded-full overflow-hidden border border-white/10">
+                <div class="bg-[#F59E0B] h-full rounded-full transition-all duration-700 shadow-[0_0_12px_#F59E0B]" [style.width.%]="getPercent(stats.screeningCandidatesCount)"></div>
               </div>
             </div>
 
             <div>
-              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+              <div class="flex justify-between text-xs font-bold text-slate-200 mb-1.5">
                 <span>3. Entretiens Techniques &amp; RH (INTERVIEW)</span>
-                <span>{{ stats.interviewCandidatesCount }} candidat(s) ({{ getPercent(stats.interviewCandidatesCount) }}%)</span>
+                <span class="text-[#B829FF]">{{ stats.interviewCandidatesCount }} candidat(s) ({{ getPercent(stats.interviewCandidatesCount) }}%)</span>
               </div>
-              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-purple-500 h-2.5 rounded-full transition-all" [style.width.%]="getPercent(stats.interviewCandidatesCount)"></div>
+              <div class="w-full bg-[#05050A] h-2.5 rounded-full overflow-hidden border border-white/10">
+                <div class="bg-gradient-to-r from-[#B829FF] to-[#FF2975] h-full rounded-full transition-all duration-700 shadow-[0_0_12px_#B829FF]" [style.width.%]="getPercent(stats.interviewCandidatesCount)"></div>
               </div>
             </div>
 
             <div>
-              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+              <div class="flex justify-between text-xs font-bold text-slate-200 mb-1.5">
                 <span>4. Candidatures Retenues (ACCEPTED)</span>
-                <span>{{ stats.acceptedCandidatesCount }} candidat(s) ({{ getPercent(stats.acceptedCandidatesCount) }}%)</span>
+                <span class="text-[#10B981]">{{ stats.acceptedCandidatesCount }} candidat(s) ({{ getPercent(stats.acceptedCandidatesCount) }}%)</span>
               </div>
-              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-emerald-500 h-2.5 rounded-full transition-all" [style.width.%]="getPercent(stats.acceptedCandidatesCount)"></div>
+              <div class="w-full bg-[#05050A] h-2.5 rounded-full overflow-hidden border border-white/10">
+                <div class="bg-[#10B981] h-full rounded-full transition-all duration-700 shadow-[0_0_12px_#10B981]" [style.width.%]="getPercent(stats.acceptedCandidatesCount)"></div>
               </div>
             </div>
 
             <div>
-              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+              <div class="flex justify-between text-xs font-bold text-slate-200 mb-1.5">
                 <span>5. Candidatures Non Retenues (REJECTED)</span>
-                <span>{{ stats.rejectedCandidatesCount }} candidat(s) ({{ getPercent(stats.rejectedCandidatesCount) }}%)</span>
+                <span class="text-[#EF4444]">{{ stats.rejectedCandidatesCount }} candidat(s) ({{ getPercent(stats.rejectedCandidatesCount) }}%)</span>
               </div>
-              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-rose-500 h-2.5 rounded-full transition-all" [style.width.%]="getPercent(stats.rejectedCandidatesCount)"></div>
+              <div class="w-full bg-[#05050A] h-2.5 rounded-full overflow-hidden border border-white/10">
+                <div class="bg-[#EF4444] h-full rounded-full transition-all duration-700 shadow-[0_0_12px_#EF4444]" [style.width.%]="getPercent(stats.rejectedCandidatesCount)"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Live Activity Log -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs flex flex-col justify-between">
+        <!-- Live Activity Log with Pulsing Nodes -->
+        <div tilt3d [tiltMaxAngle]="4" revealOnScroll [revealDelay]="100" class="card-3d-glass rounded-2xl p-6 flex flex-col justify-between">
           <div>
-            <h3 class="text-base font-extrabold text-slate-900 mb-1">Journal d'Activité Récente</h3>
-            <p class="text-xs text-slate-500 mb-4">Traçabilité temps réel (Audit Log)</p>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="text-base font-extrabold text-white">Journal d'Activité Live</h3>
+              <span class="live-pulse-dot"></span>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">Traçabilité temps réel (Audit Log)</p>
             <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
               @for (act of stats.recentActivities; track act.id) {
-                <div class="flex items-start gap-2.5 text-xs border-b border-slate-100 pb-2.5 last:border-0">
-                  <span class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 shrink-0"></span>
+                <div class="flex items-start gap-2.5 text-xs border-b border-white/10 pb-2.5 last:border-0">
+                  <span class="w-2 h-2 rounded-full mt-1.5 shrink-0" style="background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary)"></span>
                   <div>
-                    <p class="text-slate-800 font-semibold leading-snug">{{ act.details }}</p>
+                    <p class="text-slate-100 font-semibold leading-snug">{{ act.details }}</p>
                     <p class="text-[10px] text-slate-400 mt-0.5">Par {{ act.userName }} • {{ act.entity }}</p>
                   </div>
                 </div>
@@ -161,22 +195,23 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
       </div>
 
       <!-- Gestion Complète des Offres de Stage (CRUD) -->
-      <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs">
+      <div revealOnScroll class="card-3d-glass rounded-2xl p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
           <div>
-            <h2 class="text-lg font-extrabold text-slate-900">Gestion du Catalogue des Offres de Stage</h2>
-            <p class="text-xs text-slate-500">Créez, modifiez, publiez (OPEN), passez en brouillon (DRAFT) ou clôturez (CLOSED) vos offres</p>
+            <h2 class="text-lg font-extrabold text-white">Gestion du Catalogue des Offres de Stage</h2>
+            <p class="text-xs text-slate-400">Créez, modifiez, publiez (OPEN), passez en brouillon (DRAFT) ou clôturez (CLOSED) vos offres</p>
           </div>
-          <div class="flex items-center gap-2">
-            <select [(ngModel)]="offerStatusFilter" class="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-semibold bg-white">
+          <div class="flex items-center gap-2.5">
+            <select [(ngModel)]="offerStatusFilter" class="px-3 py-1.5 rounded-xl text-xs font-semibold">
               <option value="">Tous les statuts ({{ offers.length }})</option>
               <option value="OPEN">OPEN (Publiées)</option>
               <option value="DRAFT">DRAFT (Brouillons)</option>
               <option value="CLOSED">CLOSED (Fermées)</option>
             </select>
             <button
+              magneticBtn
               (click)="openCreateOfferModal()"
-              class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition">
+              class="px-3.5 py-1.5 text-xs font-black rounded-xl btn-3d-primary">
               + Nouvelle Offre
             </button>
           </div>
@@ -185,7 +220,7 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-slate-200 text-[11px] font-bold uppercase text-slate-400">
+              <tr class="border-b border-white/10 text-[11px] font-bold uppercase text-slate-400">
                 <th class="py-3 px-3">Titre de l'Offre</th>
                 <th class="py-3 px-3">Département</th>
                 <th class="py-3 px-3">Lieu &amp; Durée</th>
@@ -194,21 +229,21 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
                 <th class="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 text-xs">
+            <tbody class="divide-y divide-white/10 text-xs">
               @for (offer of filteredOffers; track offer.id) {
-                <tr class="hover:bg-slate-50/80 transition">
+                <tr class="hover:bg-white/5 transition">
                   <td class="py-3.5 px-3">
-                    <p class="font-bold text-slate-900">{{ offer.title }}</p>
+                    <p class="font-bold text-white">{{ offer.title }}</p>
                     <div class="flex flex-wrap gap-1 mt-1">
                       @for (s of offer.skills.slice(0, 4); track s) {
-                        <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{{ s }}</span>
+                        <span class="text-[10px] bg-white/5 border border-white/10 text-slate-300 px-1.5 py-0.5 rounded">{{ s }}</span>
                       }
                     </div>
                   </td>
-                  <td class="py-3.5 px-3 font-medium text-slate-700">{{ offer.departmentName }}</td>
-                  <td class="py-3.5 px-3 text-slate-500">{{ offer.location }} • {{ offer.durationMonths }} mois</td>
+                  <td class="py-3.5 px-3 font-medium text-slate-300">{{ offer.departmentName }}</td>
+                  <td class="py-3.5 px-3 text-slate-400">{{ offer.location }} • {{ offer.durationMonths }} mois</td>
                   <td class="py-3.5 px-3">
-                    <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-full">
+                    <span class="px-2.5 py-1 bg-indigo-50 border font-bold rounded-full">
                       {{ offer.candidatesCount }} candidat(s)
                     </span>
                   </td>
@@ -216,9 +251,9 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
                     <span
                       class="px-2.5 py-1 rounded-full text-[11px] font-bold border"
                       [ngClass]="{
-                        'bg-emerald-50 text-emerald-700 border-emerald-200': offer.status === 'OPEN',
-                        'bg-amber-50 text-amber-700 border-amber-200': offer.status === 'DRAFT',
-                        'bg-slate-100 text-slate-600 border-slate-300': offer.status === 'CLOSED'
+                        'bg-emerald-50': offer.status === 'OPEN',
+                        'bg-amber-50': offer.status === 'DRAFT',
+                        'bg-slate-100': offer.status === 'CLOSED'
                       }">
                       {{ offer.status }}
                     </span>
@@ -226,25 +261,29 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
                   <td class="py-3.5 px-3 text-right space-x-1.5 whitespace-nowrap">
                     @if (offer.status !== 'OPEN') {
                       <button
+                        magneticBtn
                         (click)="toggleOfferStatus(offer, 'OPEN')"
-                        class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg transition">
+                        class="px-2.5 py-1 bg-emerald-50 border font-bold rounded-lg transition">
                         Publier
                       </button>
                     } @else {
                       <button
+                        magneticBtn
                         (click)="toggleOfferStatus(offer, 'CLOSED')"
-                        class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded-lg transition">
+                        class="px-2.5 py-1 bg-amber-50 border font-bold rounded-lg transition">
                         Fermer
                       </button>
                     }
                     <button
+                      magneticBtn
                       (click)="openEditOfferModal(offer)"
-                      class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition">
+                      class="px-2.5 py-1 btn-3d-glass font-bold rounded-lg">
                       Modifier
                     </button>
                     <button
+                      magneticBtn
                       (click)="deleteOffer(offer.id)"
-                      class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-lg transition">
+                      class="px-2.5 py-1 bg-rose-50 border font-bold rounded-lg transition">
                       Suppr.
                     </button>
                   </td>
@@ -255,35 +294,35 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
         </div>
       </div>
 
-      <!-- Modal Création / Édition d'Offre -->
+      <!-- Modal 3D Création / Édition d'Offre -->
       @if (showOfferModal) {
-        <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 my-8">
+        <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div tilt3d [tiltMaxAngle]="3" class="card-3d-glass rounded-3xl max-w-lg w-full p-6 sm:p-8 my-8">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-black text-slate-900">
+              <h3 class="text-lg font-black text-white">
                 {{ editingOfferId ? 'Modifier l’Offre de Stage' : 'Créer une Nouvelle Offre de Stage' }}
               </h3>
-              <button (click)="showOfferModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
+              <button (click)="showOfferModal = false" class="text-slate-400 hover:text-white">✕</button>
             </div>
 
             <form (ngSubmit)="saveOffer()" class="space-y-3.5">
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Titre de l'offre *</label>
-                <input [(ngModel)]="offerForm.title" name="title" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Stagiaire Ingénieur DevSecOps">
+                <label class="block text-xs font-bold text-slate-300 mb-1">Titre de l'offre *</label>
+                <input [(ngModel)]="offerForm.title" name="title" required class="w-full px-3 py-2 rounded-xl text-sm outline-none" placeholder="Ex: Stagiaire Ingénieur DevSecOps">
               </div>
 
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Département *</label>
-                  <select [(ngModel)]="offerForm.departmentId" name="departmentId" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">Département *</label>
+                  <select [(ngModel)]="offerForm.departmentId" name="departmentId" class="w-full px-3 py-2 rounded-xl text-sm">
                     @for (d of departments; track d.id) {
                       <option [ngValue]="d.id">{{ d.name }}</option>
                     }
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Statut *</label>
-                  <select [(ngModel)]="offerForm.status" name="status" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">Statut *</label>
+                  <select [(ngModel)]="offerForm.status" name="status" class="w-full px-3 py-2 rounded-xl text-sm">
                     <option value="OPEN">OPEN (Publiée)</option>
                     <option value="DRAFT">DRAFT (Brouillon)</option>
                     <option value="CLOSED">CLOSED (Fermée)</option>
@@ -293,34 +332,34 @@ import { DashboardStats, Department, InternshipOffer, OfferStatus } from '../../
 
               <div class="grid grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Durée (mois)</label>
-                  <input [(ngModel)]="offerForm.durationMonths" name="durationMonths" type="number" min="1" max="12" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">Durée (mois)</label>
+                  <input [(ngModel)]="offerForm.durationMonths" name="durationMonths" type="number" min="1" max="12" class="w-full px-3 py-2 rounded-xl text-sm">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Date de début</label>
-                  <input [(ngModel)]="offerForm.startDate" name="startDate" type="date" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">Date de début</label>
+                  <input [(ngModel)]="offerForm.startDate" name="startDate" type="date" class="w-full px-3 py-2 rounded-xl text-sm">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Localisation</label>
-                  <input [(ngModel)]="offerForm.location" name="location" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm" placeholder="Casablanca">
+                  <label class="block text-xs font-bold text-slate-300 mb-1">Localisation</label>
+                  <input [(ngModel)]="offerForm.location" name="location" class="w-full px-3 py-2 rounded-xl text-sm" placeholder="Casablanca">
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Compétences (séparées par des virgules)</label>
-                <input [(ngModel)]="offerForm.skillsText" name="skillsText" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm" placeholder="Java, Spring Boot, Angular, Docker">
+                <label class="block text-xs font-bold text-slate-300 mb-1">Compétences (séparées par des virgules)</label>
+                <input [(ngModel)]="offerForm.skillsText" name="skillsText" class="w-full px-3 py-2 rounded-xl text-sm" placeholder="Java, Spring Boot, Angular, Docker">
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Description détaillée *</label>
-                <textarea [(ngModel)]="offerForm.description" name="description" rows="3" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm"></textarea>
+                <label class="block text-xs font-bold text-slate-300 mb-1">Description détaillée *</label>
+                <textarea [(ngModel)]="offerForm.description" name="description" rows="3" required class="w-full px-3 py-2 rounded-xl text-sm"></textarea>
               </div>
 
-              <div class="flex justify-end gap-2 pt-3">
-                <button type="button" (click)="showOfferModal = false" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600">
+              <div class="flex justify-end gap-2.5 pt-3">
+                <button magneticBtn type="button" (click)="showOfferModal = false" class="px-4 py-2 rounded-xl text-xs font-bold btn-3d-glass">
                   Annuler
                 </button>
-                <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md">
+                <button magneticBtn type="submit" class="px-5 py-2 rounded-xl text-xs font-black btn-3d-primary">
                   {{ editingOfferId ? 'Enregistrer' : 'Publier l’offre' }}
                 </button>
               </div>
